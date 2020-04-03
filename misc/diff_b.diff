@@ -1,0 +1,895 @@
+20c20
+< if [ ! -e ${DIR}/pdl-gnu_archlinux.sh ]; then
+---
+> if [ ! -e ${DIR}/archlinux.sh ]; then
+40,51d39
+< function gconf()
+< {
+<   # set an entry in the default gconf database
+<   if [ -z "$1" ] || [ -z $2 ]|| [ -z "$3" ]; then
+<     echo "missing input $1|$2|$3!"
+<   else
+<     /usr/bin/gconftool-2 --direct \
+<       --config-source="$(/usr/bin/gconftool-2 --get-default-source)" \
+<       --type=$1 --set $2 "$3"
+<   fi
+< }
+< 
+121,122c109,110
+<     sudo -u ${MAIN_USER} mkdir -p /home/${MAIN_USER}/${2}
+<     sudo -u ${MAIN_USER} unzip -d /home/${MAIN_USER}/${2} -o "${DIR}"/"${1}".zip
+---
+>     sudo -u ${MAIN_USER} mkdir -p /home/${MAIN_USER}/"${2}"
+>     sudo -u ${MAIN_USER} unzip -d /home/${MAIN_USER}/"${2}" -o "${DIR}"/"${1}".zip
+142a131,134
+>         mkswap /dev/${SWAP}
+>         swapon /dev/${SWAP}
+>         echo "formatting..."
+>         sleep 10
+146,147d137
+<         mkswap /dev/${SWAP}
+<         swapon /dev/${SWAP}
+150c140
+<           find / -maxdepth 1 -mindepth 1 -not -name home -exec rm -fr {} \;
+---
+>           find /mnt -maxdepth 1 -mindepth 1 -not -name home -exec rm -fr {} \;
+152c142
+<         echo -e "N\n\n\n" | pacstrap -i /mnt base base-devel
+---
+>         pacstrap -i /mnt base base-devel
+157c147
+<         sed -i -e "s/_DEVICE_/${DEVICE}/" /mnt/pdl-gnu_archlinux.sh
+---
+>         sed -i -e "s/_DEVICE_/${DEVICE}/" /mnt/archlinux.sh
+190c180
+<         grub-install --recheck /dev/_DEVICE_
+---
+>         grub-install --target=i386-pc /dev/_DEVICE_
+196,205d185
+<         if [ ${HOSTNAME} = euclid ]; then
+<           systemctl enable NetworkManager-wait-online.service
+<         elif [ ${HOSTNAME} = archimedes ]; then
+<           echo -e "[device]\nwifi.scan-rand-mac-address=no" \
+<             >> /etc/NetworkManager/NetworkManager.conf
+<         fi
+< 
+<         # openssh
+<         archpackage openssh
+<         systemctl enable sshd.service
+211,212c191
+<           echo "[[ -z \${DISPLAY} && \${XDG_VTNR} -eq 1 ]] && startxfce4" \
+<             >> /home/${MAIN_USER}/.bash_profile
+---
+>           echo "[[ -z \${DISPLAY} && \${XDG_VTNR} -eq 1 ]] && startxfce4"  >> /home/${MAIN_USER}/.bash_profile
+224c203
+<         # cifs-utils/samba + fstab
+---
+>         # samba/fstab
+256,257c235
+<           echo "UUID=c89cb473-3e20-4178-9a6c-9dbe90d34f59	/mnt/Datavault  ext4		defaults,nofail,relatime	0 0" \
+<             >> /etc/fstab
+---
+>           echo "UUID=c89cb473-3e20-4178-9a6c-9dbe90d34f59	/mnt/Datavault  ext4		defaults,nofail,relatime	0 0" >> /etc/fstab
+265,266c243
+<           echo "//samba/Datavault /mnt/Datavault cifs noauto,_netdev,credentials=/root/.dvcred 0   0" \
+<             >> /etc/fstab
+---
+>           echo "//newton/Datavault /mnt/Datavault cifs noauto,_netdev,credentials=/root/.dvcred 0   0" >> /etc/fstab
+285,289d261
+<   # configure network connection
+<   while ! ping -c 4 google.com > /dev/null 2>&1; do
+<     nmtui
+<   done
+< 
+293,294c265
+<     sed -i -e ':a;N;$!ba;'"s/#\[multilib\]\n#${OPTS}/\[multilib\]\n${OPTS}/" \
+<       /etc/pacman.conf
+---
+>     sed -i -e ':a;N;$!ba;'"s/#\[multilib\]\n#${OPTS}/\[multilib\]\n${OPTS}/" /etc/pacman.conf
+308,309c279
+<   sed -i -e 's/.*PACKAGER=".*"/PACKAGER="'"${MAIN_USER}@$(dnsdomainname)\"/" \
+<     /etc/makepkg.conf
+---
+>   sed -i -e 's/.*PACKAGER=".*"/PACKAGER="'"${MAIN_USER}@$(dnsdomainname)\"/" /etc/makepkg.conf
+311,327c281,312
+<   sed -i -e "s/#Server = http:\/\/mirrors.kernel/Server = http:\/\/mirrors.kernel/" \
+<     /etc/pacman.d/mirrorlist
+<   mkdir -p /home/${MAIN_USER}/.local/share
+<   if [ -d "${DIR}"/Wallpaper ]; then
+<     cp "${DIR}"/Wallpaper/* /home/${MAIN_USER}/.local/share
+<   fi
+<   chown -R ${MAIN_USER}:users /home/${MAIN_USER}
+< 
+<   # singular packages
+<   archpackage screen bc cabextract dosfstools ethtool gnu-netcat inotify-tools \
+<     lsof wol lame p7zip smartmontools unrar unzip wget zip rsync
+< 
+<   # ntfs-3g+exfat-utils
+<   archpackage ntfs-3g exfat-utils
+< 
+<   # nmap
+<   archpackage nmap
+---
+>   sed -i -e "s/#Server = http:\/\/mirrors.kernel/Server = http:\/\/mirrors.kernel/" /etc/pacman.d/mirrorlist
+>   if [ -d "${DIR}"/Wallpaper ] && [ ! -d /home/${MAIN_USER}/.local/share ]; then
+>     mkdir -p /home/${MAIN_USER}/.local/share
+>     sudo -u ${MAIN_USER} cp "${DIR}"/Wallpaper/* /home/${MAIN_USER}/.local/share
+>   fi
+> 
+>   # install packages
+>   archpackage screen \
+>     bc \
+>     cabextract \
+>     dosfstools \
+>     ethtool \
+>     gnu-netcat \
+>     inotify-tools \
+>     lsof \
+>     lame \
+>     p7zip \
+>     smartmontools \
+>     unrar \
+>     unzip \
+>     wget \
+>     zip \
+>     rsync \
+>     ntfs-3g \
+>     exfat-utils \
+>     ntp \
+>     nodejs-lts-dubnium \
+>     npm \
+>     git \
+>     xorg-server \
+>     lib32-mesa \
+>     nmap
+330,395d314
+< 
+<   # ntp
+<   archpackage ntp
+< 
+<   # nodejs
+<   archpackage nodejs-lts-dubnium
+< 
+<   # npm
+<   archpackage npm
+< 
+<   # git
+<   archpackage git
+< 
+<   # alsa-utils
+<   archpackage alsa-utils
+<   amixer -q set Center,0 100% unmute > /dev/null 2>&1
+<   amixer -q set LFE,0 100% unmute > /dev/null 2>&1
+<   amixer -q set Side,0 100% unmute > /dev/null 2>&1
+<   amixer -q set Surround,0 100% unmute > /dev/null 2>&1
+<   amixer -q set Master,0 50% unmute > /dev/null
+< 
+<   # xorg-server|libglvnd
+<   if ! pacman -Q xorg-server > /dev/null 2>&1; then
+<     echo -e "1\ny" | pacman -S xorg-server
+<   fi
+< 
+<   # lib32-mesa
+<   if ! pacman -Q | grep -q nvidia-.*libgl; then
+<     archpackage lib32-mesa
+<   fi
+< 
+<   # xorg-xprop
+<   archpackage xorg-xprop
+< 
+<   # xf86-input-synaptics
+<   archpackage xf86-input-synaptics
+< 
+<   # rdesktop
+<   archpackage rdesktop
+< 
+<   # libxv
+<   archpackage libxv
+< 
+<   # libxvmc
+<   archpackage libxvmc
+< 
+<   # xcbutil
+<   archpackage xcb-util
+< 
+<   # ffmpeg
+<   if ! pacman -Q ffmpeg > /dev/null 2>&1; then
+<     echo -e "1\ny" | pacman -S ffmpeg
+<   fi
+<   sed -i -e "s/Qt V4L2 test Utility/Qv4L2/" ${APP}/qv4l2.desktop
+<   add_unique "NoDisplay=true" ${APP}/qvidcap.desktop
+< 
+<   # ttf-dejavu
+<   archpackage ttf-dejavu
+<   ln -sf /etc/fonts/conf.avail/10-hinting-full.conf /etc/fonts/conf.d/
+<   ln -sf /etc/fonts/conf.avail/10-autohint.conf /etc/fonts/conf.d/
+<   rm -vf /etc/fonts/conf.d/10-hinting-slight.conf 2> /dev/null
+< 
+<   # noto-fonts-emoji
+<   archpackage noto-fonts-emoji
+< 
+<   # xf86-video-intel
+397,411c316,325
+<     archpackage xf86-video-intel
+< 
+<     # libva-intel-driver
+<     archpackage libva-intel-driver
+<     archpackage lib32-libva-intel-driver
+< 
+<     # libva1-intel-driver
+<     archpackage libva1 lib32-libva1
+<     archpackage libva1-intel-driver lib32-libva1-intel-driver
+< 
+<     # libvdpau-va-gl
+<     archpackage libvdpau-va-gl
+< 
+<   # xf86-video-ati
+<   else
+---
+>     archpackage xf86-video-intel \
+>       libva-intel-driver \
+>       lib32-libva-intel-driver \
+>       libva1 lib32-libva1 \
+>       libva1-intel-driver \
+>       lib32-libva1-intel-driver \
+>       libvdpau-va-gl
+>   elif ! lspci | grep VGA | grep -qi VMware; then
+>     archpackage libva-vdpau-driver \
+>       lib32-libva-vdpau-driver
+414,419c328,329
+<       echo -e "export LIBVA_DRIVER_NAME=vdpau\nexport VDPAU_DRIVER=r600" \
+<         > /etc/profile.d/vdpau.sh
+< 
+<     # nouveau
+<     elif lspci | grep VGA | grep -qi GeForce\ FX \
+<     || lspci | grep VGA | grep -qi GeForce\ [6-7]; then
+---
+>       echo -e "export LIBVA_DRIVER_NAME=vdpau\nexport VDPAU_DRIVER=r600" > /etc/profile.d/vdpau.sh
+>     elif lspci | grep VGA | grep -qi GeForce\ FX || lspci | grep VGA | grep -qi GeForce\ [6-7]; then
+421,422d330
+< 
+<     # nvidia
+424,427c332,333
+<       echo -e "y\ny\ny" | pacman -S nvidia
+< 
+<       # lib32-nvidia-libgl
+<       echo -e "y\ny\ny" | pacman -S lib32-nvidia-libgl
+---
+>       pacman -S nvidia
+>       pacman -S lib32-nvidia-libgl
+429,434d334
+< 
+<     # libva-vdpau-driver
+<     archpackage libva-vdpau-driver
+< 
+<     # lib32-libva-vdpau-driver
+<     archpackage lib32-libva-vdpau-driver
+436,456c336,361
+< 
+<   # vdpauinfo
+<   archpackage vdpauinfo
+< 
+<   # libva-utils
+<   archpackage libva-utils
+< 
+<   # gtk2
+<   archpackage gtk2
+< 
+<   # ttf-liberation
+<   archpackage ttf-liberation
+< 
+<   # gtk-engines
+<   archpackage gtk-engines
+< 
+<   # obs-studio
+<   archpackage obs-studio
+< 
+<   # obs-websocket-git
+<   archpackage qt5-websockets
+---
+>   archpackage vdpauinfo \
+>     libva-utils \
+>     xf86-input-synaptics \
+>     libxv \
+>     libxvmc \
+>     xcb-util \
+>     ttf-dejavu \
+>     noto-fonts-emoji \
+>     ttf-liberation \
+>     wqy-zenhei
+>   ln -sf /etc/fonts/conf.avail/10-hinting-full.conf /etc/fonts/conf.d/
+>   ln -sf /etc/fonts/conf.avail/10-autohint.conf /etc/fonts/conf.d/
+>   rm -vf /etc/fonts/conf.d/10-hinting-slight.conf 2> /dev/null
+>   archpackage ffmpeg
+>   sed -i -e "s/Qt V4L2 test Utility/Qv4L2/" ${APP}/qv4l2.desktop
+>   add_unique "NoDisplay=true" ${APP}/qvidcap.desktop
+>   if [ $(hostname) = "newton" ]; then
+>     archpackage minidlna
+>     systemctl enable minidlna.service
+>     add_unique "friendly_name=Simba Server" /etc/minidlna.conf
+>     add_unique "media_dir=V,/mnt/Datavault/Video" /etc/minidlna.conf
+>   fi
+>   archpackage viewnior
+>   sed -i -e "s/GNOME.*Viewer;/AudioVideo;/" ${APP}/viewnior.desktop
+>   archpackage obs-studio \
+>     qt5-websockets
+458c363
+<     archbuild PRIMARYDATALOOP obs-websocket-git
+---
+>     archbuild PRIMARYDATALOOP obs-websocket-git "" "" rhash cmake jsoncpp
+460,462c365,366
+< 
+<   # obs-linuxbrowser-bin
+<   archpackage gconf
+---
+>   archpackage gconf \
+>     libxss
+464,465d367
+< 
+<   # snes9x-gtk
+467d368
+<   sed -i -e "s/Game;Emulator/Game/" ${APP}/snes9x-gtk.desktop
+469,470c370
+< 
+<   # gzdoom
+---
+>   sed -i -e "s/Game;Emulator/Game/" ${APP}/snes9x-gtk.desktop
+474,495c374,378
+< 
+<   # youtube-dl
+<   archpackage youtube-dl
+< 
+<   # intltool
+<   archpackage perl-xml-parser intltool
+< 
+<   # galculator
+<   archpackage galculator
+< 
+<   # itstool
+<   archpackage itstool
+< 
+<   # easytag
+<   archpackage id3lib libid3tag opusfile taglib wavpack easytag
+< 
+<   # xarchiver
+<   archpackage xarchiver
+< 
+<   # fceux
+<   archpackage fceux
+<   sed -i -e "s/Game;Emulator/Game/" ${APP}/fceux.desktop
+---
+>   archpackage youtube-dl \
+>     galculator \
+>     xarchiver \
+>     easytag \
+>     fceux
+497,502c380
+< 
+<   # gparted
+<   archpackage gparted
+<   sed -i -e "s/System;/Utility;/" ${APP}/gparted.desktop
+< 
+<   # gimp
+---
+>   sed -i -e "s/Game;Emulator/Game/" ${APP}/fceux.desktop
+504,523c382,386
+<   sed -i -e "s/Name=GNU Image Manipulation Program/Name=GIMP/" \
+<     -e "s/Graphics.*GTK;/AudioVideo;/" ${APP}/gimp.desktop
+< 
+<   # gtk3
+<   archpackage gtk3
+< 
+<   # transmission
+<   archpackage transmission-cli
+<   archpackage transmission-gtk
+< 
+<   # chromium
+<   archpackage chromium
+< 
+<   # gvfs
+<   archpackage gvfs
+<   rm -f /etc/udev/rules.d/10-local.rules
+<   for DEVICE in $(blkid | grep System\ Reserved | grep -o /dev/sd..); do
+<     echo "KERNEL==\"${DEVICE/*\/}\", ENV{UDISKS_IGNORE}=\"1\"" \
+<       >> /etc/udev/rules.d/10-local.rules
+<   done
+---
+>   sed -i -e "s/Name=GNU Image Manipulation Program/Name=GIMP/" -e "s/Graphics.*GTK;/AudioVideo;/" ${APP}/gimp.desktop
+>   archpackage transmission-cli \
+>     transmission-gtk \
+>     chromium \
+>     gvfs
+527,556c390,397
+< 
+<   # gvfs-smb
+<   archpackage gvfs-smb
+< 
+<   # gnome-keyring
+<   archpackage gnome-keyring
+<   if ! grep -q gnome_keyring /etc/pam.d/login; then
+<     sed -i -e "s/account/auth       optional     pam_gnome_keyring.so\n&/" \
+<       /etc/pam.d/login
+<   fi
+<   add_unique "session    optional     pam_gnome_keyring.so    auto_start" /etc/pam.d/login
+<   add_unique "password        optional        pam_gnome_keyring.so" /etc/pam.d/passwd
+< 
+<   # seahorse
+<   archpackage seahorse
+<   sed -i -e "s/;Utility;/;Settings;/" ${APP}/org.gnome.seahorse.Application.desktop
+< 
+<   # pulseaudio
+<   archpackage pulseaudio
+< 
+<   # pulseaudio-alsa
+<   archpackage pulseaudio-alsa
+< 
+<   # lib32-alsa-plugins
+<   archpackage lib32-alsa-plugins
+< 
+<   # lib32-Lpulse
+<   archpackage lib32-libpulse
+< 
+<   # mpv
+---
+>   archpackage gvfs-smb \
+>     gvfs-mtp \
+>     pulseaudio \
+>     pulseaudio-alsa \
+>     lib32-alsa-plugins \
+>     lib32-libpulse \
+>     pasystray
+>   add_unique "NoDisplay=true" ${APP}/pasystray.desktop
+558,559c399,414
+<   cp "${DIR}"/input.conf /etc/mpv/input.conf
+<   cp "${DIR}"/mpv.conf /etc/mpv/mpv.conf
+---
+>   {
+>     echo "1 set window-scale 1.00"
+>     echo "2 set window-scale 2.00"
+>     echo "0 set window-scale 0.50"
+>     echo "- add volume -1"
+>     echo "= add volume 1"
+>   } > /etc/mpv/input.conf
+>   {
+>     echo "keep-open"
+>     echo "volume=100"
+>     echo "softvol=yes"
+>     echo "hwdec=auto"
+>     echo "save-position-on-quit"
+>     echo "load-unsafe-playlists"
+>     echo "no-stop-screensaver"
+>   } > /etc/mpv/mpv.conf
+561,562d415
+< 
+<   # kodi
+565,591c418,429
+< 
+<   # handbrake
+<   archpackage handbrake
+< 
+<   # gst-libav
+<   archpackage gst-libav
+< 
+<   # gst-plugins-good
+<   archpackage gst-plugins-good
+< 
+<   # gst-plugins-bad
+<   archpackage gst-plugins-bad
+< 
+<   # metacity downgrade
+<   archpackage aspell hunspell enchant geoclue2 hspell hyphen libvoikko libgtop startup-notification zenity webkit2gtk
+<   archbuild PRIMARYDATALOOP metacity
+<   if [ ! -d /usr/share/themes/Clearlooks/metacity-1 ]; then
+<     OPTS=ftp.gnome.org/pub/GNOME/sources/gnome-themes
+<     wget ${OPTS}/2.32/gnome-themes-2.32.1.tar.bz2 || exit 1
+<     tar -xjf gnome-themes-2.32.1.tar.bz2
+<     mv gnome-themes-2.32.1/metacity-themes/Clearlooks \
+<       /usr/share/themes/Clearlooks/metacity-1
+<     rm -fr gnome-themes-2.32.1 gnome-themes-2.32.1.tar.bz2
+<   fi
+<   gconf int /apps/metacity/general/num_workspaces 1
+< 
+<   # steam
+---
+>   archpackage gst-libav \
+>     gst-plugins-good \
+>     handbrake \
+>     network-manager-applet \
+>     notepadqq \
+>     synergy
+>   sed -i -e "s/Development;/;/" ${APP}/notepadqq.desktop
+>   sed -i -e "s/Icon=synergy/Icon=\/usr\/share\/icons\/synergy.ico/" ${APP}/synergy.desktop
+>   archpackage vbam-wx
+>   sed -i -e "s/Emulator;/;/" ${APP}/wxvbam.desktop
+>   extract_game Game\ Boy .vbam/roms/Game\ Boy
+>   extract_game Game\ Boy\ Color .vbam/roms/Game\ Boy\ Color
+597,602c435
+<   rm -f /usr/lib/udev/rules.d/80-steam-controller-permission.rules \
+<     ${APP}/steam-native.desktop
+<   {
+<     echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="28de", MODE="0666"'
+<     echo 'KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0660", GROUP="users"'
+<   } > /etc/udev/rules.d/99-steam-controller-perms.rules
+---
+>   rm -f ${APP}/steam-native.desktop
+616,642c449,455
+< 
+<   # wqy-zenhei
+<   archpackage wqy-zenhei
+< 
+<   # fonts-tlwg
+<   archpackage fonts-tlwg
+< 
+<   # network-manager-applet-gtk2 "0.9.8.10-2, no modem, gobj-introspect"
+<   archpackage gnome-icon-theme gnome-icon-theme-symbolic mobile-broadband-provider-info
+<   archbuild PRIMARYDATALOOP network-manager-applet-gtk2
+< 
+<   # mate-desktop-schemas-gtk2
+<   if ! pacman -Q mate-desktop-gtk2 > /dev/null 2>&1; then
+<     archpackage gobject-introspection-runtime python-beaker python-mako python-markupsafe gobject-introspection
+<     archbuild AUR mate-desktop-schemas-gtk2
+< 
+<     # mate-desktop-gtk2
+<     archbuild AUR mate-desktop-gtk2
+<   fi
+< 
+<   # pluma downgrade
+<   archbuild AUR enchant1.6
+<   archpackage gtksourceview2 pygtksourceview2
+<   archbuild PRIMARYDATALOOP pluma
+<   mkdir -p /etc/dconf/profile /etc/dconf/db/$(dnsdomainname).d
+<   echo "user-db:user" > /etc/dconf/profile/user
+<   echo "system-db:$(dnsdomainname)" >> /etc/dconf/profile/user
+---
+>   archpackage xfce4-session
+>   if ! grep -q SaveOnExit /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml; then
+>     sed -i -e 's/value="Failsafe"\/>/&\n    <property name="SaveOnExit" type="bool" value="false"\/>/' \
+>       /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml
+>   fi
+>   archpackage xfwm4 \
+>     xfdesktop
+644,694c457,477
+<     echo -e "\n[org/mate/pluma]"
+<     echo "color-scheme='classic'"
+<     echo "display-line-numbers=true"
+<     echo "display-right-margin=true"
+<     echo "highlight-current-line=true"
+<     echo "bracket-matching=true"
+<     echo "tabs-size=2"
+<     echo "insert-spaces=true"
+<     echo "wrap-mode='GTK_WRAP_NONE'"
+<     echo "use-default-font=false"
+<     echo "editor-font='Monospace 8'"
+<   } > /etc/dconf/db/$(dnsdomainname).d/$(dnsdomainname).key
+< 
+<   # aspell-en
+<   archpackage aspell-en
+< 
+<   # pluma-plugins
+<   archpackage boost-libs docbook-xsl glib2-docs gtk-doc source-highlight mate-common
+<   archpackage gtksourceview3
+<   archbuild AUR pluma-plugins
+<   glib-compile-schemas /usr/share/glib-2.0/schemas/
+<   update-desktop-database -q
+<   echo "active-plugins=['drawspaces','spell']" \
+<     >> /etc/dconf/db/$(dnsdomainname).d/$(dnsdomainname).key
+<   dconf update
+< 
+<   # viewnior
+<   archpackage viewnior
+<   sed -i -e "s/GNOME.*Viewer;/AudioVideo;/" ${APP}/viewnior.desktop
+< 
+<   # synergy
+<   archpackage synergy
+<   sed -i -e "s/Icon=Synergy/Icon=\/usr\/share\/icons\/synergy.ico/" ${APP}/synergy.desktop
+< 
+<   # vbam-wx
+<   archpackage vbam-wx
+<   sed -i -e "s/Emulator;/;/" ${APP}/wxvbam.desktop
+<   extract_game Game\ Boy .vbam/roms/Game\ Boy
+<   extract_game Game\ Boy\ Color .vbam/roms/Game\ Boy\ Color
+<   extract_game Game\ Boy\ Advance .vbam/roms/Game\ Boy\ Advance
+< 
+<   # tumbler
+<   archpackage tumbler
+< 
+<   # libxfce4-util/ui + xfconf
+<   archbuild AUR libxfce4util-gtk2
+<   archbuild AUR xfconf-gtk2
+<   archbuild AUR libxfce4ui-gtk2
+< 
+<   # garcon
+<   archpackage garcon
+---
+>     echo '<?xml version="1.0" encoding="UTF-8"?>'
+>     echo '<channel name="xfce4-desktop" version="1.0">'
+>     echo '  <property name="desktop-icons" type="empty">'
+>     echo '    <property name="file-icons" type="empty">'
+>     echo '      <property name="show-home" type="bool" value="false"/>'
+>     echo '      <property name="show-removable" type="bool" value="false"/>'
+>     echo '      <property name="show-trash" type="bool" value="false"/>'
+>     echo '      <property name="show-filesystem" type="bool" value="false"/>'
+>     echo '    </property>'
+>     echo '    <property name="icon-size" type="uint" value="32"/>'
+>     echo '    <property name="style" type="uint" value="0"/>'
+>     echo '  </property>'
+>     echo '  <property name="desktop-menu" type="empty">'
+>     echo '    <property name="show" type="bool" value="false"/>'
+>     echo '  </property>'
+>     echo '  <property name="windowlist-menu" type="empty">'
+>     echo '    <property name="show" type="bool" value="false"/>'
+>     echo '  </property>'
+>     echo '</channel>'
+>   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
+>   archpackage xfce4-panel
+696,698d478
+< 
+<   # exo
+<   archpackage exo
+703,707c483
+< 
+<   # xfce4-panel
+<   archbuild AUR xfce4-panel-gtk2
+<   sed -i -e ':a;N;$!ba;s/<Separator\/>\n\s*<Menuname>/<Menuname>/' \
+<     /etc/xdg/menus/xfce-applications.menu
+---
+>   sed -i -e ':a;N;$!ba;s/<Separator\/>\n\s*<Menuname>/<Menuname>/' /etc/xdg/menus/xfce-applications.menu
+723,724d498
+<     echo '        <value type="int" value="6"/>'
+<     echo '        <value type="int" value="12"/>'
+726a501
+>     echo '        <value type="int" value="7"/>'
+730a506,507
+>     echo '        <value type="int" value="12"/>'
+>     echo '        <value type="int" value="6"/>'
+740a518
+>     echo '      <property name="flat-buttons" type="bool" value="true"/>'
+743a522,523
+>     echo '      <property name="mode" type="uint" value="2"/>'
+>     echo '      <property name="digital-format" type="string" value=" %H:%M"/>'
+757,802c537,538
+<     echo '  </property>'
+<     echo '</channel>'
+<   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
+< 
+<   # thunar
+<   archbuild PRIMARYDATALOOP thunar-gtk2
+<   sed -i -e "s/=Thunar File Manager/=Thunar/" ${APP}/Thunar.desktop
+<   sed -i -e "s/System;Utility/Utility/" ${APP}/Thunar.desktop
+<   sed -i -e "s/System;Utility/Utility/" ${APP}/Thunar-bulk-rename.desktop
+<   {
+<     echo '<?xml version="1.0" encoding="UTF-8"?>'
+<     echo '<channel name="thunar" version="1.0">'
+<     echo '  <property name="last-view" type="string" value="ThunarDetailsView"/>'
+<     echo '  <property name="misc-folders-first" type="bool" value="false"/>'
+<     echo '  <property name="misc-date-style" type="string" value="THUNAR_DATE_STYLE_ISO"/>'
+<     echo '  <property name="default-view" type="string" value="ThunarDetailsView"/>'
+<     echo '  <property name="shortcuts-icon-size" type="string" value="THUNAR_ICON_SIZE_SMALLEST"/>'
+<     echo '  <property name="last-details-view-zoom-level" type="string" value="THUNAR_ZOOM_LEVEL_SMALLEST"/>'
+<     echo '  <property name="last-separator-position" type="int" value="120"/>'
+<     echo '  <property name="last-location-bar" type="string" value="ThunarLocationButtons"/>'
+<     echo '  <property name="last-details-view-visible-columns" type="string" value="THUNAR_COLUMN_DATE_MODIFIED,THUNAR_COLUMN_NAME,THUNAR_COLUMN_SIZE"/>'
+<     echo '  <property name="last-details-view-column-order" type="string" value="THUNAR_COLUMN_DATE_MODIFIED,THUNAR_COLUMN_SIZE,THUNAR_COLUMN_NAME,THUNAR_COLUMN_TYPE,THUNAR_COLUMN_DATE_ACCESSED,THUNAR_COLUMN_OWNER,THUNAR_COLUMN_PERMISSIONS,THUNAR_COLUMN_MIME_TYPE,THUNAR_COLUMN_GROUP"/>'
+<     echo '  <property name="last-details-view-fixed-columns" type="bool" value="true"/>'
+<     echo '</channel>'
+<   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/thunar.xml
+< 
+<   # thunar-volman
+<   archpackage thunar-volman
+< 
+<   # thunar-archive-plugin
+<   archpackage thunar-archive-plugin
+< 
+<   # thunar-media-tags-plugin
+<   archpackage thunar-media-tags-plugin
+< 
+<   # xfdesktop
+<   archbuild AUR xfdesktop-gtk2
+<   {
+<     echo '<?xml version="1.0" encoding="UTF-8"?>'
+<     echo '<channel name="xfce4-desktop" version="1.0">'
+<     echo '  <property name="desktop-icons" type="empty">'
+<     echo '    <property name="file-icons" type="empty">'
+<     echo '      <property name="show-home" type="bool" value="false"/>'
+<     echo '      <property name="show-removable" type="bool" value="false"/>'
+<     echo '      <property name="show-trash" type="bool" value="false"/>'
+<     echo '      <property name="show-filesystem" type="bool" value="false"/>'
+---
+>     echo '    <property name="plugin-7" type="string" value="separator">'
+>     echo '      <property name="style" type="uint" value="0"/>'
+804,811d539
+<     echo '    <property name="icon-size" type="uint" value="32"/>'
+<     echo '    <property name="style" type="uint" value="0"/>'
+<     echo '  </property>'
+<     echo '  <property name="desktop-menu" type="empty">'
+<     echo '    <property name="show" type="bool" value="false"/>'
+<     echo '  </property>'
+<     echo '  <property name="windowlist-menu" type="empty">'
+<     echo '    <property name="show" type="bool" value="false"/>'
+814,817c542,543
+<   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
+< 
+<   # xfce4-appfinder
+<   archbuild AUR xfce4-appfinder-gtk2
+---
+>   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
+>   archpackage xfce4-appfinder
+819,822c545,557
+< 
+<   # xfce4-power-manager "no lxpanel makedep, 1.4.4"
+<   archpackage libimobiledevice libplist libusbmuxd upower
+<   archbuild PRIMARYDATALOOP xfce4-power-manager
+---
+>   archpackage xfce4-settings
+>   sed -i -e 's/"ThemeName".*/"ThemeName" type="string" value="Adwaita-dark"\/>/' \
+>     -e "s/sorThemeName\" type=\"string\" value=\"\"/sorThemeName\" type=\"string\" value=\"Adwaita\"/" \
+>     -e "s/sorThemeSize\" type=\"int\" value=\"0\"/sorThemeSize\" type=\"int\" value=\"48\"/" \
+>     /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml
+>   sed -i -e 's/needs\.$/&-->/' -e 's/XSettingsRegistry$/XSettingsRegistry -->/' \
+>     -e '/^-->/d' \
+>     -e 's/"Antialias" type="int" value="-1"/"Antialias" type="int" value="1"/' \
+>     -e 's/"RGBA" type="string" value="none"/"RGBA" type="string" value="rgb"/' \
+>     -e 's/"Hinting" type="int" value="-1"/"Hinting" type="int" value="1"/' \
+>     -e 's/type="string" value="hintfull"/type="string" value="hintmedium"/' \
+>     -e "s/Sans 10/Sans 8/" /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml
+>   archpackage xfce4-power-manager
+853,857c588
+< 
+<   # xfce4-terminal "0.6.3 now using vte legacy as of 4/18"
+<   archpackage vte-common
+<   archbuild AUR vte-legacy "" "" gobject-introspection-runtime python-beaker python-mako python-markupsafe gobject-introspection
+<   archbuild PRIMARYDATALOOP xfce4-terminal
+---
+>   archpackage xfce4-terminal
+861,868c592,595
+<     echo "CommandLoginShell=TRUE"
+<     echo "ScrollingOnOutput=FALSE"
+<     echo "ScrollingLines=10000"
+<     echo "FontName=Monospace 8"
+<     echo "TabActivityTimeout=30"
+<     echo "ColorForeground=#0000ffff0000"
+<     echo "ColorCursor=#ffffffffffff"
+<     echo "TitleMode=TERMINAL_TITLE_HIDE"
+---
+>     echo -e "CommandLoginShell=TRUE\nScrollingOnOutput=FALSE"
+>     echo -e "ScrollingLines=10000\nFontName=Monospace 8"
+>     echo -e "TabActivityTimeout=30\nColorForeground=#0000ffff0000"
+>     echo -e "ColorCursor=#ffffffffffff\nTitleMode=TERMINAL_TITLE_HIDE"
+870,932c597,602
+<   sed -i -e "s/GTK;System;/Utility;/" -e "s/Name=Xfce /Name=/" \
+<     ${APP}/xfce4-terminal.desktop
+< 
+<   # xfce4-session
+<   archbuild AUR xfce4-session-gtk2
+<   sed -i -e "s/\"xfwm4\"/\"metacity\"/" \
+<     /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml
+<   if ! grep -q SaveOnExit /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml; then
+<     sed -i -e 's/value="Failsafe"\/>/&\n    <property name="SaveOnExit" type="bool" value="false"\/>/' \
+<       /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml
+<   fi
+<   if ! grep -q LaunchGNOME /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml; then
+<     sed -i -e 's/  <property name="splash"/  <property name=\"compat\" type=\"empty\">\n    <property name=\"LaunchGNOME\" type=\"bool\" value="true"\/>\n  <\/property>\n&/' \
+<       /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml
+<   fi
+<   if ! grep -q systemd-user /etc/xdg/xfce4/xinitrc; then
+<     sed -i -e "s/XRESOURCES=\"\"/&\nsource \/etc\/X11\/xinit\/xinitrc.d\/50-systemd-user.sh/" \
+<       /etc/xdg/xfce4/xinitrc
+<   fi
+<   if ! grep -q SSH_AUTH_SOCK /etc/xdg/xfce4/xinitrc; then
+<     sed -i -e "s/XRESOURCES=\"\"/&\neval \$(\/usr\/bin\/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh)\nexport SSH_AUTH_SOCK/" \
+<       /etc/xdg/xfce4/xinitrc
+<   fi
+< 
+<   # xfce4-settings
+<   archbuild AUR xfce4-settings-gtk2
+<   sed -i -e 's/"ThemeName".*/"ThemeName" type="string" value="Clearlooks"\/>/' \
+<     -e "s/sorThemeName\" type=\"string\" value=\"\"/sorThemeName\" type=\"string\" value=\"Adwaita\"/" \
+<     -e "s/sorThemeSize\" type=\"int\" value=\"0\"/sorThemeSize\" type=\"int\" value=\"48\"/" \
+<     /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml
+<   sed -i -e 's/needs\.$/&-->/' -e 's/XSettingsRegistry$/XSettingsRegistry -->/' \
+<     -e '/^-->/d' \
+<     -e 's/"Antialias" type="int" value="-1"/"Antialias" type="int" value="1"/' \
+<     -e 's/"RGBA" type="string" value="none"/"RGBA" type="string" value="rgb"/' \
+<     -e 's/"Hinting" type="int" value="-1"/"Hinting" type="int" value="1"/' \
+<     -e 's/type="string" value="hintfull"/type="string" value="hintmedium"/' \
+<     -e "s/Sans 10/Sans 8/" /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml
+< 
+<   # gstreamer0.10
+<   archbuild AUR gstreamer0.10 "" "" gobject-introspection-runtime python-beaker python-mako python-markupsafe gobject-introspection
+< 
+<   # gstreamer0.10-base + gstreamer0.10-base-plugins
+<   archbuild AUR gstreamer0.10-base "" "" gobject-introspection-runtime python-beaker python-mako python-markupsafe gobject-introspection
+< 
+<   # xfce4-mixer
+<   archpackage libkeybinder2 libunique
+<   archbuild AUR xfce4-mixer
+<   add_unique "NoDisplay=true" ${APP}/xfce4-mixer.desktop
+< 
+<   # xfce4-notifyd "2.4.3-1"
+<   archbuild PRIMARYDATALOOP xfce4-notifyd
+<   {
+<     echo '<?xml version="1.0" encoding="UTF-8"?>'
+<     echo '<channel name="xfce4-notifyd" version="1.0">'
+<     echo '  <property name="theme" type="string" value="Smoke"/>'
+<     echo '</channel>'
+<   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-notifyd.xml
+< 
+<   # xfce4-taskmanager
+<   archpackage xfce4-taskmanager
+<   sed -i -e "s/System;Utility/Utility/" ${APP}/xfce4-taskmanager.desktop
+< 
+<   # xfce4-cpugraph
+---
+>   add_unique "NoDisplay=true" ${APP}/xfce4-terminal-settings.desktop
+>   sed -i -e "s/GTK;System;/Utility;/" -e "s/Name=Xfce /Name=/" ${APP}/xfce4-terminal.desktop
+>   archpackage xfce4-notifyd \
+>     xfce4-screenshooter \
+>     xfce4-taskmanager
+>   sed -i -e "s/System;Utility/Utility/" -e "s/utilities-system-monitor/xfsm-suspend/" ${APP}/xfce4-taskmanager.desktop
+934,938c604,605
+<   echo -e 'UpdateInterval=3\nSize=24\nBars=0\nBackground=#000000000000' \
+<     > /etc/xdg/xfce4/panel/cpugraph-13.rc
+< 
+<   # xfce4-systemload-plugin "1.1.2-2"
+<   archbuild PRIMARYDATALOOP xfce4-systemload-plugin
+---
+>   echo -e 'UpdateInterval=3\nSize=24\nBars=0\nBackground=#000000000000' > /etc/xdg/xfce4/panel/cpugraph-13.rc
+>   archpackage xfce4-systemload-plugin
+941,944c608,609
+<     echo -e '[SL_Cpu]\nEnabled=false\n'
+<     echo -e '[SL_Mem]\nUse_Label=false\n'
+<     echo -e '[SL_Swap]\nUse_Label=false\n'
+<     echo -e '[SL_Uptime]\nEnabled=false'
+---
+>     echo -e '[SL_Cpu]\nEnabled=false\n[SL_Mem]\nUse_Label=false\n'
+>     echo -e '[SL_Swap]\nUse_Label=false\n[SL_Uptime]\nEnabled=false'
+946,947d610
+< 
+<   # xfce4-weather-plugin
+950,951d612
+< 
+<   # xfce4-sensors-plugin
+954,959c615,616
+<   echo -e '[General]\nShow_Title=false\nShow_Labels=false\nShow_Units=false\nUpdate_Interval=60' \
+<     > /etc/xdg/xfce4/panel/xfce4-sensors-plugin-9.rc
+< 
+<   # xfce4-clipman-plugin "1.2.6"
+<   archpackage qrencode
+<   archbuild PRIMARYDATALOOP xfce4-clipman-plugin
+---
+>   echo -e '[General]\nShow_Title=false\nShow_Labels=false\nShow_Units=false\nUpdate_Interval=60' > /etc/xdg/xfce4/panel/xfce4-sensors-plugin-9.rc
+>   archpackage xfce4-clipman-plugin
+960a618,641
+>   archpackage thunar \
+>     thunar-volman \
+>     thunar-archive-plugin \
+>     thunar-media-tags-plugin \
+>     tumbler
+>   sed -i -e "s/=Thunar File Manager/=Thunar/" ${APP}/Thunar.desktop
+>   sed -i -e "s/System;Utility/Utility/" ${APP}/Thunar.desktop
+>   sed -i -e "s/System;Utility/Utility/" ${APP}/Thunar-bulk-rename.desktop
+>   {
+>     echo '<?xml version="1.0" encoding="UTF-8"?>'
+>     echo '<channel name="thunar" version="1.0">'
+>     echo '  <property name="last-view" type="string" value="ThunarDetailsView"/>'
+>     echo '  <property name="misc-folders-first" type="bool" value="false"/>'
+>     echo '  <property name="misc-date-style" type="string" value="THUNAR_DATE_STYLE_ISO"/>'
+>     echo '  <property name="default-view" type="string" value="ThunarDetailsView"/>'
+>     echo '  <property name="shortcuts-icon-size" type="string" value="THUNAR_ICON_SIZE_SMALLEST"/>'
+>     echo '  <property name="last-details-view-zoom-level" type="string" value="THUNAR_ZOOM_LEVEL_SMALLEST"/>'
+>     echo '  <property name="last-separator-position" type="int" value="120"/>'
+>     echo '  <property name="last-location-bar" type="string" value="ThunarLocationButtons"/>'
+>     echo '  <property name="last-details-view-visible-columns" type="string" value="THUNAR_COLUMN_DATE_MODIFIED,THUNAR_COLUMN_NAME,THUNAR_COLUMN_SIZE"/>'
+>     echo '  <property name="last-details-view-column-order" type="string" value="THUNAR_COLUMN_DATE_MODIFIED,THUNAR_COLUMN_SIZE,THUNAR_COLUMN_NAME,THUNAR_COLUMN_TYPE,THUNAR_COLUMN_DATE_ACCESSED,THUNAR_COLUMN_OWNER,THUNAR_COLUMN_PERMISSIONS,THUNAR_COLUMN_MIME_TYPE,THUNAR_COLUMN_GROUP"/>'
+>     echo '  <property name="last-details-view-fixed-columns" type="bool" value="true"/>'
+>     echo '</channel>'
+>   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/thunar.xml
+962,965c643
+<   # xfce4-screenshooter
+<   archpackage xfce4-screenshooter
+< 
+<   # remove cache link and obsolete packages, clean journal, show files
+---
+>   # finish
+967a646
+>   pacman -R cmake jsoncpp

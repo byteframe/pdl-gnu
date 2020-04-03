@@ -1,0 +1,48 @@
+# $Id: PKGBUILD 216758 2014-07-09 21:49:19Z anatolik $
+# Maintainer : Tom Gundersen <teg@jklm.no>
+# Maintainer : Ionut Biru <ibiru@archlinux.org>
+
+pkgbase=transmission
+pkgname=('transmission-cli' 'transmission-gtk')
+pkgver=2.84
+pkgrel=1
+arch=('i686' 'x86_64')
+url="http://www.transmissionbt.com/"
+license=('MIT')
+makedepends=('gtk2' 'intltool' 'curl' 'libevent')
+source=(http://ftp.osuosl.org/pub/blfs/conglomeration/transmission/$pkgbase-$pkgver.tar.xz)
+md5sums=('411aec1c418c14f6765710d89743ae42')
+
+build() {
+  cd $pkgbase-$pkgver
+  PKG_CONFIG_PATH=/usr/lib/openssl-1.0/pkgconfig/ ./configure --prefix=/usr --with-gtk=2
+  make
+}
+package_transmission-cli() {
+  pkgdesc="Fast, easy, and free BitTorrent client (CLI tools, daemon and web client)"
+  depends=('curl' 'libevent')
+  install=transmission-cli.install
+
+  cd $pkgbase-$pkgver
+
+  for dir in daemon cli web utils
+  do
+      make -C "$dir" DESTDIR="$pkgdir" install
+  done
+
+  install -D -m644 COPYING "$pkgdir/usr/share/licenses/transmission-cli/COPYING"
+}
+
+package_transmission-gtk() {
+  pkgdesc="Fast, easy, and free BitTorrent client (GTK+ GUI)"
+  depends=('curl' 'libevent' 'gtk2' 'desktop-file-utils' 'hicolor-icon-theme')
+  optdepends=('notification-daemon: Desktop notification support'
+  	      'transmission-cli: daemon and web support')
+  install=transmission-gtk.install
+
+  cd $pkgbase-$pkgver
+
+  make -C gtk DESTDIR="$pkgdir" install
+  make -C po DESTDIR="$pkgdir" install
+  install -D -m644 COPYING "$pkgdir/usr/share/licenses/transmission-gtk/COPYING"
+}

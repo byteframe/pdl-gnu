@@ -1,0 +1,37 @@
+# $Id$
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgname=file-roller
+pkgver=2.32.2
+pkgrel=1
+pkgdesc="Create and modify archives"
+arch=('i686' 'x86_64')
+license=('GPL')
+depends=('desktop-file-utils' 'gtk2' 'hicolor-icon-theme' 'gconf' 'libarchive' 'file' 'zip' 'unzip')
+makedepends=('intltool' 'pkg-config')
+optdepends=('p7zip: 7z, arj, exe and encrypted zip files support'
+            'unrar: better RAR archive support'
+            'unace: ACE archive support'
+            'lrzip: lrzip archive support'
+            'cdrkit: ISO image support')
+options=('!emptydirs')
+install=file-roller.install
+url="http://www.gnome.org"
+source=(http://ftp.gnome.org/pub/gnome/sources/$pkgname/${pkgver:0:4}/$pkgname-$pkgver.tar.bz2)
+sha256sums=('2b3a1111caba26e67b96559a3118a700dbfb6a4c6ad7ebd3e509df227995411c')
+
+build() {
+  cd $pkgname-$pkgver
+
+  ./configure --prefix=/usr --sysconfdir=/etc \
+      --libexecdir=/usr/lib/file-roller \
+      --localstatedir=/var --disable-static \
+      --disable-schemas-compile
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+}

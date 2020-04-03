@@ -1,0 +1,36 @@
+0a1
+> # $Id: PKGBUILD 216758 2014-07-09 21:49:19Z anatolik $
+5c6
+< pkgname=('transmission-cli' 'transmission-gtk' 'transmission-qt')
+---
+> pkgname=('transmission-cli' 'transmission-gtk')
+11c12
+< makedepends=('gtk3' 'intltool' 'curl' 'qt5-base' 'libevent')
+---
+> makedepends=('gtk3' 'intltool' 'curl' 'libevent')
+20,22d20
+<   pushd qt
+<   qmake qtr.pro
+<   make
+26c24
+<   depends=('curl' 'libevent' 'systemd')
+---
+>   depends=('curl' 'libevent')
+36d33
+<   install -D -m644 "$srcdir/transmission-$pkgver/daemon/transmission-daemon.service" "$pkgdir/usr/lib/systemd/system/transmission.service"
+52,66d48
+< }
+< 
+< package_transmission-qt() {
+<   pkgdesc="Fast, easy, and free BitTorrent client (Qt GUI)"
+<   depends=('curl' 'qt5-base' 'libevent' 'libxkbcommon-x11')
+<   optdepends=('transmission-cli: daemon and web support')
+<   install=transmission-qt.install
+< 
+<   cd $pkgbase-$pkgver
+< 
+<   make -C qt INSTALL_ROOT="$pkgdir"/usr install
+< 
+<   install -D -m644 COPYING "$pkgdir/usr/share/licenses/transmission-qt/COPYING"
+<   install -D -m644 qt/icons/transmission.png "$pkgdir/usr/share/pixmaps/transmission-qt.png"
+<   install -D -m644 qt/transmission-qt.desktop "$pkgdir/usr/share/applications/transmission-qt.desktop"

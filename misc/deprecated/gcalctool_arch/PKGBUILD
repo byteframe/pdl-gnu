@@ -1,0 +1,29 @@
+# Contributor: byteframe <byteframe gmail com>
+
+pkgname=(gcalctool)
+pkgver=5.32.2
+pkgrel=1
+pkgdesc='GTK+ based scientific calculator'
+arch=('i686' 'x86_64')
+url='http://gcalctool.sourceforge.net/'
+license=('GPL')
+depends=('gtk2' 'gnome-doc-utils')
+makedepends=('intltool')
+install=${pkgname}.install
+source=("ftp://ftp.gnome.org/pub/gnome/sources/gcalctool/5.32/gcalctool-5.32.2.tar.bz2")
+sha256sums=('91ac62d6d74da910cb79c68f7bf3f4505ac0efe51091150c4ea54fe1c1306235')
+
+build() {
+  cd "${srcdir}/gcalctool-${pkgver}"
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var
+  make
+}
+
+package_gcalctool() {
+  cd "${srcdir}/gcalctool-${pkgver}"
+  make DESTDIR="$pkgdir" install
+}
+

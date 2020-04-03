@@ -1,0 +1,93 @@
+Runtime (4) fltk glu xorg-xsetroot tigervnc
+Build (1) nasm
+archbuild AUR xrdp
+--------------------------------------------------------------------------------
+Build (2) nasm xorg-server-devel xorg-util-macros
+archbuild AUR xorgxrdp
+--------------------------------------------------------------------------------
+git clone https://github.com/Microsoft/linux-vm-tools
+cd linux-vm-tools/arch
+./install-config.sh
+cp /etc/X11/xinit/xinitrc ~/.xinitrc
+(edit with nano just have exec startxfce4)
+--------------------------------------------------------------------------------
+Set-VM -VMName ArchLinux-x86_64-Gen2-NOSB -EnhancedSessionTransportType HvSocket
+Set-VM -VMName Ubuntu1910-x86_64-Gen2 -EnhancedSessionTransportType HvSocket
+Set-VM -VMName Fedora31-x86_64-Gen2 -EnhancedSessionTransportType HvSocket
+--------------------------------------------------------------------------------
+106,108d105
+< if [ -d /sys/firmware/efi/efivars ]; then
+<   UEFI=2
+< fi
+116c113
+<     ROOT=${DEVICE}6
+---
+>     ROOT=${DEVICE}2
+122,123c119
+<     elif [ -x /bin/nano ]; then
+<       nano /etc/pacman.d/mirrorlist
+---
+>     elif ! which patch > /dev/null 2>&1; then
+125,127c121,126
+<         SWAP=5
+<         echo "formatting: ${ROOT} | swap: ${SWAP} | efi: ${UEFI}"
+<         read CONFIRM
+---
+>         nano /etc/pacman.d/mirrorlist
+>         SWAP=${DEVICE}1
+>         mkswap /dev/${SWAP}
+>         swapon /dev/${SWAP}
+>         echo "formatting..."
+>         sleep 10
+129c128
+<           mkfs.ext4 /dev/${ROOT}
+---
+>           echo y | mkfs.ext4 /dev/${ROOT}
+131,132d129
+<         mkswap /dev/${DEVICE}${SWAP}
+<         swapon /dev/${DEVICE}${SWAP}
+134,137d130
+<         if [ ! -z ${UEFI} ]; then
+<           mkdir /mnt/efi
+<           mount /dev/${DEVICE}${UEFI} /mnt/efi
+<         fi
+156a150
+>         export LANG=en_US.UTF-8
+159c153
+<         echo -e "127.0.0.1\tlocalhost\n::1\tlocalhost\n127.0.1.1\t${1}.${DOMAIN}  ${1}" > /etc/hosts
+---
+>         sed -i -e "s/localdomain\tlocalhost/${DOMAIN}\tlocalhost ${1}/" /etc/hosts
+178,183c172
+<         if [ -z ${UEFI} ]; then
+<           grub-install --target=i386-pc /dev/_DEVICE_
+<         else
+<           archpackage efibootmgr
+<           grub-install --target=x86_64-efi --efi-directory=efi --bootloader-id=GRUB
+<         fi
+---
+>         grub-install --target=i386-pc /dev/_DEVICE_
+190c179
+<         # main user/sudo
+---
+>         # main user
+202d190
+<         archpackage sudo
+210c198
+<         if [ ${1} = "euclid" ]; then
+---
+>         if [ ${1} = "newton" ]; then
+247c235
+<           echo "//euclid/Datavault /mnt/Datavault cifs noauto,_netdev,credentials=/root/.dvcred 0   0" >> /etc/fstab
+---
+>           echo "//newton/Datavault /mnt/Datavault cifs noauto,_netdev,credentials=/root/.dvcred 0   0" >> /etc/fstab
+283a272
+>   pacman -R snes9x-gtk fceux vbam-wx gzdoom-2.1 fluidsynth
+325d313
+<   archpackage xf86-video-fbdev
+333a322,323
+>   elif lspci | grep VGA | grep -qi Hyper-V; then
+>     archpackage xf86-video-fbdev
+634a625
+>   rm -fv /etc/locale.gen.pacnew
+635a627
+>   pacman -R cmake jsoncpp

@@ -1,0 +1,21 @@
+schema_install() {
+  SCHEMA="$1"
+  GCONF_CONFIG_SOURCE="xml::etc/gconf/gconf.xml.defaults" \
+  chroot . gconftool-2 --makefile-install-rule \
+    /etc/gconf/schemas/$SCHEMA \
+    1>/dev/null
+}
+
+post_install() {
+   #glib-compile-schemas /usr/share/glib-2.0/schemas/
+schema_install metacity.schemas
+}
+
+post_upgrade() {
+    post_install
+}
+
+post_remove() {
+    post_install
+}
+
