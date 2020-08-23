@@ -288,7 +288,7 @@ if [ -z "${SOURCING}" ];then
   # system upgrade/clutches
   pacman -Sy
   pacman -Rns $(pacman -Qtdq)
-  while ! pacman --noconfirm -Su; do
+  while ! pacman -Su; do
     sleep 3
   done
 
@@ -444,6 +444,7 @@ if [ -z "${SOURCING}" ];then
       fi
     fi
   fi
+  archpackage imagemagick
   archpackage rdesktop
   archpackage retroarch
   sed -i -e "s/Emulator;/;/" ${APP}/retroarch.desktop

@@ -14,7 +14,7 @@ sudo pacman -R vim
 -------------------------------------------------------------------------------- FIXES
 pacman -S binutils
 strip --remove-section=.note.ABI-tag /usr/lib/libQt5Core.so.5
-sudo pacman -Udd /mnt/c/systemd-altctl-1.4.3027-1-x86_64.pkg.tar.xz
+sudo pacman -Udd /mnt/c/systemd-altctl-1.4.4181-2-any.pkg.tar.xz
 sed -i 's/fakeroot$/fakeroot systemd-sysvcompat/' /etc/pacman.conf
 -------------------------------------------------------------------------------- RUNNING
 export DISPLAY=:0.0
