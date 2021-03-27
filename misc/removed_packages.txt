@@ -1,3 +1,6 @@
+archpackage kodi
+sed -i -e "s/media center//" ${APP}/kodi.desktop
+
 archpackage snes9x-gtk
 extract_game Super\ Nintendo .snes9x/roms
 sed -i -e "s/Game;Emulator/Game/" ${APP}/snes9x-gtk.desktop

@@ -413,15 +413,13 @@ if [ -z "${SOURCING}" ];then
     echo "no-stop-screensaver"
   } > /etc/mpv/mpv.conf
   sed -i -e "s/ Media Player//" ${APP}/mpv.desktop
-  archpackage kodi
-  sed -i -e "s/media center//" ${APP}/kodi.desktop
   archpackage gst-libav \
     gst-plugins-good \
     handbrake \
     notepadqq \
     synergy
-  sed -i -e "s/Development;/;/" ${APP}/notepadqq.desktop
   sed -i -e "s/Icon=synergy/Icon=\/usr\/share\/icons\/synergy.ico/" ${APP}/synergy.desktop
+  sed -i -e "s/Development;/;/" ${APP}/notepadqq.desktop
   if [ -z ${WSL} ]; then
     archpackage network-manager-applet
     archpackage steam
@@ -480,10 +478,10 @@ if [ -z "${SOURCING}" ];then
   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
   archpackage xfce4-panel
   add_unique "NoDisplay=true" ${APP}/xfce4-about.desktop
-  add_unique "NoDisplay=true" ${APP}/exo-file-manager.desktop
-  add_unique "NoDisplay=true" ${APP}/exo-mail-reader.desktop
-  add_unique "NoDisplay=true" ${APP}/exo-terminal-emulator.desktop
-  add_unique "NoDisplay=true" ${APP}/exo-web-browser.desktop
+  add_unique "NoDisplay=true" ${APP}/xfce4-file-manager.desktop
+  add_unique "NoDisplay=true" ${APP}/xfce4-mail-reader.desktop
+  add_unique "NoDisplay=true" ${APP}/xfce4-terminal-emulator.desktop
+  add_unique "NoDisplay=true" ${APP}/xfce4-web-browser.desktop
   sed -i -e ':a;N;$!ba;s/<Separator\/>\n\s*<Menuname>/<Menuname>/' /etc/xdg/menus/xfce-applications.menu
   {
     echo '<?xml version="1.0" encoding="UTF-8"?>'
