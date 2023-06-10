@@ -1,0 +1,40 @@
+section: screens
+	steamdeck:
+		halfDuplexCapsLock = false
+		halfDuplexNumLock = false
+		halfDuplexScrollLock = false
+		xtestIsXineramaUnaware = false
+		preserveFocus = false
+		switchCorners = none +top-left +bottom-left +bottom-right 
+		switchCornerSize = 0
+	euclid:
+		halfDuplexCapsLock = false
+		halfDuplexNumLock = false
+		halfDuplexScrollLock = false
+		xtestIsXineramaUnaware = false
+		preserveFocus = false
+		switchCorners = none +top-right +bottom-left +bottom-right 
+		switchCornerSize = 0
+end
+
+section: aliases
+end
+
+section: links
+	steamdeck:
+		right = euclid
+	euclid:
+		left = steamdeck
+end
+
+section: options
+	relativeMouseMoves = false
+	screenSaverSync = false
+	win32KeepForeground = false
+	clipboardSharing = true
+	switchDelay = 500
+	switchCorners = none 
+	switchCornerSize = 0
+	keystroke(Control+Alt+Space) = lockCursorToScreen(toggle)
+end
+

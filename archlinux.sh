@@ -138,7 +138,7 @@ if [ -z "${SOURCING}" ];then
         if [ ! -z ${FORMAT} ]; then
           find /mnt -maxdepth 1 -mindepth 1 -not -name home -exec rm -fr {} \;
         fi
-        pacstrap -i /mnt base base-devel linux linux-firmware
+        pacstrap -i /mnt base linux linux-firmware
         genfstab -U /mnt >> /mnt/etc/fstab
         sed -i -e "s/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" /mnt/etc/locale.gen
         echo LANG=en_US.UTF-8 > /mnt/etc/locale.conf
@@ -273,7 +273,7 @@ if [ -z "${SOURCING}" ];then
   }
 
   # detect WSL
-  if uname -a | grep -q Microsoft; then
+  if uname -a | grep -qi microsoft; then
     WSL=true
   fi
 
@@ -288,6 +288,7 @@ if [ -z "${SOURCING}" ];then
   # system upgrade/clutches
   pacman -Sy
   pacman -Rns $(pacman -Qtdq)
+  pacman -R vim
   while ! pacman -Su; do
     sleep 3
   done
@@ -302,33 +303,33 @@ if [ -z "${SOURCING}" ];then
   archpackage screen \
     bc \
     cabextract \
-    dosfstools \
     ethtool \
+    diffutils \
     gnu-netcat \
     inotify-tools \
     lsof \
     lame \
     p7zip \
-    smartmontools \
     unrar \
     unzip \
     wget \
     zip \
     rsync \
-    ntfs-3g \
-    exfat-utils \
     ntp \
-    nodejs-lts-dubnium \
+    nodejs \
     npm \
     git \
-    xorg-server \
     nmap \
-    nano
+		python-pip \
+    nano \
+    xorg-server
   if [ -z ${WSL} ]; then
-    archpackage lib32-mesa
+    archpackage dosfstools \
+      ntfs-3g
+      smartmontools \
+      exfat-utils
+      lib32-mesa
   fi
-  add_unique "NoDisplay=true" ${APP}/zenmap.desktop
-  add_unique "NoDisplay=true" ${APP}/zenmap-root.desktop
   if [ -e /proc/bus/pci ]; then
     archpackage xf86-video-fbdev \
       xf86-input-synaptics
@@ -353,18 +354,21 @@ if [ -z "${SOURCING}" ];then
         pacman -S lib32-nvidia-libgl
       fi
     fi
+    archpackage vdpauinfo \
+      libva-utils \
+      libxv \
+      libxvmc
   fi
-  archpackage vdpauinfo \
-    libva-utils \
-    libxv \
-    libxvmc \
-    xcb-util \
+  if ! pacman -Q jack > /dev/null 2>&1; then
+    pacman -S jack
+  fi
+  archpackage xcb-util \
     ttf-dejavu \
     noto-fonts-emoji \
     ttf-liberation \
     wqy-zenhei
-  ln -sf /etc/fonts/conf.avail/10-hinting-full.conf /etc/fonts/conf.d/
-  ln -sf /etc/fonts/conf.avail/10-autohint.conf /etc/fonts/conf.d/
+  ln -sf /usr/share/fontconfig/conf.avail/10-hinting-full.conf /etc/fonts/conf.d/
+  ln -sf /usr/share/fontconfig/conf.avail/10-autohint.conf /etc/fonts/conf.d/
   rm -vf /etc/fonts/conf.d/10-hinting-slight.conf 2> /dev/null
   archpackage ffmpeg
   sed -i -e "s/Qt V4L2 test Utility/Qv4L2/" ${APP}/qv4l2.desktop
@@ -416,9 +420,7 @@ if [ -z "${SOURCING}" ];then
   archpackage gst-libav \
     gst-plugins-good \
     handbrake \
-    notepadqq \
-    synergy
-  sed -i -e "s/Icon=synergy/Icon=\/usr\/share\/icons\/synergy.ico/" ${APP}/synergy.desktop
+    notepadqq
   sed -i -e "s/Development;/;/" ${APP}/notepadqq.desktop
   if [ -z ${WSL} ]; then
     archpackage network-manager-applet
@@ -444,10 +446,6 @@ if [ -z "${SOURCING}" ];then
   fi
   archpackage imagemagick
   archpackage rdesktop
-  archpackage retroarch
-  sed -i -e "s/Emulator;/;/" ${APP}/retroarch.desktop
-  sed -i -e "s/menu_show_core_updater = false/menu_show_core_updater = true/" \
-    -e "s/libretro_directory = \/usr\/lib\/libretro/libretro_directory = ~\/.config\/retroarch\/cores/" /etc/retroarch.cfg
   archpackage xfce4-session
   if ! grep -q SaveOnExit /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml; then
     sed -i -e 's/value="Failsafe"\/>/&\n    <property name="SaveOnExit" type="bool" value="false"\/>/' \
@@ -477,11 +475,6 @@ if [ -z "${SOURCING}" ];then
     echo '</channel>'
   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
   archpackage xfce4-panel
-  add_unique "NoDisplay=true" ${APP}/xfce4-about.desktop
-  add_unique "NoDisplay=true" ${APP}/xfce4-file-manager.desktop
-  add_unique "NoDisplay=true" ${APP}/xfce4-mail-reader.desktop
-  add_unique "NoDisplay=true" ${APP}/xfce4-terminal-emulator.desktop
-  add_unique "NoDisplay=true" ${APP}/xfce4-web-browser.desktop
   sed -i -e ':a;N;$!ba;s/<Separator\/>\n\s*<Menuname>/<Menuname>/' /etc/xdg/menus/xfce-applications.menu
   {
     echo '<?xml version="1.0" encoding="UTF-8"?>'
@@ -556,6 +549,12 @@ if [ -z "${SOURCING}" ];then
     -e 's/"Hinting" type="int" value="-1"/"Hinting" type="int" value="1"/' \
     -e 's/type="string" value="hintfull"/type="string" value="hintmedium"/' \
     -e "s/Sans 10/Sans 8/" /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml
+  add_unique "NoDisplay=true" ${APP}/xfce4-about.desktop
+  add_unique "NoDisplay=true" ${APP}/xfce4-file-manager.desktop
+  add_unique "NoDisplay=true" ${APP}/xfce4-mail-reader.desktop
+  add_unique "NoDisplay=true" ${APP}/xfce4-terminal-emulator.desktop
+  add_unique "NoDisplay=true" ${APP}/xfce4-web-browser.desktop
+  add_unique "NoDisplay=true" ${APP}/lstopo.desktop
   if [ -z ${WSL} ]; then
     archpackage xfce4-power-manager
     {
@@ -607,11 +606,6 @@ if [ -z "${SOURCING}" ];then
   archpackage xfce4-cpugraph-plugin
   echo -e 'UpdateInterval=3\nSize=24\nBars=0\nBackground=#000000000000' > /etc/xdg/xfce4/panel/cpugraph-13.rc
   archpackage xfce4-systemload-plugin
-  {
-    echo -e '[Main]\nTimeout=10000\nTimeout_Seconds=10\nUse_Timeout_Seconds=true\n'
-    echo -e '[SL_Cpu]\nEnabled=false\n[SL_Mem]\nUse_Label=false\n'
-    echo -e '[SL_Swap]\nUse_Label=false\n[SL_Uptime]\nEnabled=false'
-  } > /etc/xdg/xfce4/panel/systemload-4.rc
   archpackage xfce4-weather-plugin
   echo 'label0=3' > /etc/xdg/xfce4/panel/weather-2.rc
   if [ -z ${WSL} ]; then
@@ -627,8 +621,8 @@ if [ -z "${SOURCING}" ];then
     thunar-media-tags-plugin \
     tumbler
   sed -i -e "s/=Thunar File Manager/=Thunar/" ${APP}/thunar.desktop
-  sed -i -e "s/System;Utility/Utility/" ${APP}/thunar.desktop
-  sed -i -e "s/System;Utility/Utility/" ${APP}/thunar-bulk-rename.desktop
+  sed -i -e "s/System;//" ${APP}/thunar.desktop
+  sed -i -e "s/System;//" ${APP}/thunar-bulk-rename.desktop
   {
     echo '<?xml version="1.0" encoding="UTF-8"?>'
     echo '<channel name="thunar" version="1.0">'
@@ -649,7 +643,9 @@ if [ -z "${SOURCING}" ];then
 
   # finish
   pacman -Rns $(pacman -Qtdq)
-  journalctl --vacuum-time=1d
+  if [ -z ${WSL} ]; then
+    journalctl --vacuum-time=1d
+  fi
   find /etc -name *.pacnew
   find /home/${MAIN_USER}/ -not -user ${MAIN_USER}
 fi
