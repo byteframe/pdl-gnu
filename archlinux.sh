@@ -106,7 +106,7 @@ function archbuild()
 if [ -d /sys/firmware/efi/efivars ]; then
   UEFI=1
 fi
-if [ -z "${SOURCING}" ];then
+if [ -z "${SOURCING}" ]; then
   SCRIPT_RUN=yes
   if [ ${HOSTNAME} = archiso ]; then
     DEVICE=sda
@@ -286,9 +286,7 @@ if [ -z "${SOURCING}" ];then
   rm -fr /var/cache/pacman/pkg /pdl-gnu_archlinux.log /home/pdl-gnu_archlinux.log
 
   # system upgrade/clutches
-  pacman -Sy
-  pacman -Rns $(pacman -Qtdq)
-  pacman -R vim
+  pacman -Sy archlinux-keyring
   while ! pacman -Su; do
     sleep 3
   done
@@ -302,6 +300,7 @@ if [ -z "${SOURCING}" ];then
   # install packages
   archpackage screen \
     bc \
+    binutils \
     cabextract \
     ethtool \
     diffutils \
@@ -320,9 +319,10 @@ if [ -z "${SOURCING}" ];then
     npm \
     git \
     nmap \
-		python-pip \
     nano \
-    xorg-server
+    xorg-server \
+    mesa-utils \
+		python-pip
   if [ -z ${WSL} ]; then
     archpackage dosfstools \
       ntfs-3g
@@ -330,7 +330,7 @@ if [ -z "${SOURCING}" ];then
       exfat-utils
       lib32-mesa
   fi
-  if [ -e /proc/bus/pci ]; then
+  if [ -z ${WSL} ]; then
     archpackage xf86-video-fbdev \
       xf86-input-synaptics
     if lspci | grep VGA | grep -qi Intel\ Corp; then
@@ -376,7 +376,7 @@ if [ -z "${SOURCING}" ];then
   archpackage viewnior
   sed -i -e "s/GNOME.*Viewer;/AudioVideo;/" ${APP}/viewnior.desktop
   archpackage obs-studio
-  archpackage youtube-dl \
+  archpackage yt-dlp \
     galculator \
     xarchiver \
     easytag
@@ -642,10 +642,9 @@ if [ -z "${SOURCING}" ];then
   } > /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/thunar.xml
 
   # finish
+  add_unique "NoDisplay=true" ${APP}/vim.desktop
   pacman -Rns $(pacman -Qtdq)
-  if [ -z ${WSL} ]; then
-    journalctl --vacuum-time=1d
-  fi
+  journalctl --vacuum-time=1d
   find /etc -name *.pacnew
   find /home/${MAIN_USER}/ -not -user ${MAIN_USER}
 fi
