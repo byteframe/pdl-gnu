@@ -318,10 +318,13 @@ if [ -z "${SOURCING}" ]; then
     nodejs \
     npm \
     git \
+    git-lfs \
     nmap \
     nano \
     xorg-server \
     mesa-utils \
+		python-numpy \
+		python-pillow \
 		python-pip
   if [ -z ${WSL} ]; then
     archpackage dosfstools \

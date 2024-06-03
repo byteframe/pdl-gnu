@@ -1,9 +1,9 @@
 -------------------------------------------------------------------------------- ASSET_PACK BASHRC
+S=/mnt/s/SteamLibrary/steamapps/common
 D=/mnt/c/Program\ Files\ \(x86\)/Steam/steamapps/common
-S=/mnt/v/SteamLibrary/steamapps/common
 C=${D}/SteamVR/tools/steamvr_environments/content/steamtours_addons
 G=${D}/SteamVR/tools/steamvr_environments/game/steamtours_addons
-W=/mnt/c/Users/byteframe/Downloads/source1import
+W=/mnt/c/Users/byteframe/Downloads
 X=/mnt/d/Work/Game/steamtours/asset_packs
 N=/mnt/c/Program\ Files/Notepad++/notepad++.exe
 -------------------------------------------------------------------------------- WSL1 FIXES
