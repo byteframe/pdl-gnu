@@ -325,7 +325,8 @@ if [ -z "${SOURCING}" ]; then
     mesa-utils \
 		python-numpy \
 		python-pillow \
-		python-pip
+		python-pip \
+	  imagemagick
   if [ -z ${WSL} ]; then
     archpackage dosfstools \
       ntfs-3g
