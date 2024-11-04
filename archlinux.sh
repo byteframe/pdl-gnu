@@ -558,7 +558,6 @@ if [ -z "${SOURCING}" ]; then
   add_unique "NoDisplay=true" ${APP}/xfce4-mail-reader.desktop
   add_unique "NoDisplay=true" ${APP}/xfce4-terminal-emulator.desktop
   add_unique "NoDisplay=true" ${APP}/xfce4-web-browser.desktop
-  add_unique "NoDisplay=true" ${APP}/lstopo.desktop
   if [ -z ${WSL} ]; then
     archpackage xfce4-power-manager
     {
